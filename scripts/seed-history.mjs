@@ -33,8 +33,16 @@ function colKey(h) {
 
 function toDate(v) {
   if (v instanceof Date) return isNaN(v) ? null : v;
-  if (typeof v === "number") { const d = XLSX.SSF.parse_date_code(v); return d ? new Date(d.y, d.m - 1, d.d) : null; }
-  const t = Date.parse(String(v)); return isNaN(t) ? null : new Date(t);
+  if (typeof v === "number") {
+    if (v < 20000 || v > 60000) return null; // not a plausible Excel date serial
+    const d = new Date(Math.round((v - 25569) * 86400000)); // serial -> ms since epoch (UTC)
+    return isNaN(d) ? null : new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+  }
+  const s = String(v).trim();
+  const m = s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/); // DD/MM/YYYY
+  if (m) return new Date(+m[3], +m[2] - 1, +m[1]);
+  const t = Date.parse(s);
+  return isNaN(t) ? null : new Date(t);
 }
 const pad = (n) => String(n).padStart(2, "0");
 
