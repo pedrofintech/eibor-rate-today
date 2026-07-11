@@ -11,17 +11,37 @@ const URL_DATA = "https://www.centralbank.ae/umbraco/Surface/Eibor/GetEiborData"
 const DATA = new URL("../eibor-data.json", import.meta.url);
 const ARCH = new URL("../eibor-archive.json", import.meta.url);
 const MONTHS = { January:"01", February:"02", March:"03", April:"04", May:"05", June:"06", July:"07", August:"08", September:"09", October:"10", November:"11", December:"12" };
-const UA = { headers: { "User-Agent": "Mozilla/5.0 (BrokerMatch EIBOR bot; +https://brokermatch.ae)", "Referer": "https://www.centralbank.ae/en/forex-eibor/eibor-rates/", "Accept": "text/html,application/xhtml+xml" } };
+const UA = { headers: {
+  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+  "Accept": "text/html, */*; q=0.01",
+  "Accept-Language": "en-US,en;q=0.9",
+  "Referer": "https://www.centralbank.ae/en/forex-eibor/eibor-rates/",
+  "X-Requested-With": "XMLHttpRequest"
+} };
+const LOCAL_HTML = new URL("../eibor-fragment.html", import.meta.url); // optional: pre-fetched by the workflow (curl fallback)
 
 const KEYS = ["on", "w1", "m1", "m3", "m6", "m12"];
 const isNum = (v) => typeof v === "number" && isFinite(v);
 const realRow = (r) => KEYS.every((k) => isNum(r[k]));
 const dkey = (d) => d.split("/").reverse().join("");
 
+const TOLERANT = process.argv.includes("--from-archive-ok"); // seed mode: rebuild from archive even if the live fetch fails
+
 async function main() {
-  const res = await fetch(URL_DATA, UA);
-  if (!res.ok) throw new Error("HTTP " + res.status);
-  const html = await res.text();
+  let html = "";
+  try {
+    if (existsSync(LOCAL_HTML)) {
+      html = readFileSync(LOCAL_HTML, "utf8"); // pre-fetched by the workflow (curl-impersonate)
+      console.log("[eibor] using pre-fetched fragment,", html.length, "bytes");
+    } else {
+      const res = await fetch(URL_DATA, UA);
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      html = await res.text();
+    }
+  } catch (e) {
+    if (!TOLERANT) throw e;
+    console.error("[eibor] live fetch failed (" + e.message + "); rebuilding from archive only");
+  }
 
   // Row shape: <tr> <td>10 July 2026</td> <td>on</td><td>w1</td><td>m1</td><td>m3</td><td>m6</td><td>m12</td> <td>value date</td> </tr>
   const rows = [];
@@ -36,7 +56,7 @@ async function main() {
     KEYS.forEach((k, i) => (rec[k] = vals[i]));
     rows.push(rec);
   }
-  if (!rows.length) throw new Error("No daily rows parsed (CBUAE layout changed?)");
+  if (!rows.length && !TOLERANT) throw new Error("No daily rows parsed (CBUAE layout changed or endpoint blocked?)");
 
   // Archive: accumulate every real daily fixing
   const arch = existsSync(ARCH) ? JSON.parse(readFileSync(ARCH, "utf8")) : { rows: [] };
@@ -47,6 +67,7 @@ async function main() {
   // Data file: series = last 45 days; history = monthly averages (last 13 months incl. current partial)
   const data = JSON.parse(readFileSync(DATA, "utf8"));
   data.series = arch.rows.slice(-45);
+  if (!data.series.length) throw new Error("Archive is empty - nothing to publish");
   data.referenceDate = data.series[data.series.length - 1].d;
 
   const byMonth = {};
