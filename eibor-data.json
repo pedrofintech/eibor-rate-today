@@ -1,0 +1,25 @@
+{
+  "_readme": "Data for the EIBOR tool on brokermatch.ae/eibor-rate-today. Replace every \"X.XX\" with the official CBUAE fixings from https://www.centralbank.ae/en/forex-eibor/eibor-rates/ (values as numbers, e.g. 4.312 - not strings). referenceDate = date of the latest fixing (DD/MM/YYYY). series = daily fixings, OLDEST FIRST, keys: on (overnight), w1 (1 week), m1, m3, m6, m12. history = monthly averages (d: YYYY-MM), OLDEST FIRST, used by the 1-year chart. Keep at least 2 rows in series (the change column compares the last two) and up to 30 for the daily table; 12 rows in history.",
+  "referenceDate": "09/07/2026",
+  "series": [
+    { "d": "03/07/2026", "on": "X.XX", "w1": "X.XX", "m1": "X.XX", "m3": "X.XX", "m6": "X.XX", "m12": "X.XX" },
+    { "d": "06/07/2026", "on": "X.XX", "w1": "X.XX", "m1": "X.XX", "m3": "X.XX", "m6": "X.XX", "m12": "X.XX" },
+    { "d": "07/07/2026", "on": "X.XX", "w1": "X.XX", "m1": "X.XX", "m3": "X.XX", "m6": "X.XX", "m12": "X.XX" },
+    { "d": "08/07/2026", "on": "X.XX", "w1": "X.XX", "m1": "X.XX", "m3": "X.XX", "m6": "X.XX", "m12": "X.XX" },
+    { "d": "09/07/2026", "on": "X.XX", "w1": "X.XX", "m1": "X.XX", "m3": "X.XX", "m6": "X.XX", "m12": "X.XX" }
+  ],
+  "history": [
+    { "d": "2025-07", "m1": "X.XX", "m3": "X.XX", "m6": "X.XX", "m12": "X.XX" },
+    { "d": "2025-08", "m1": "X.XX", "m3": "X.XX", "m6": "X.XX", "m12": "X.XX" },
+    { "d": "2025-09", "m1": "X.XX", "m3": "X.XX", "m6": "X.XX", "m12": "X.XX" },
+    { "d": "2025-10", "m1": "X.XX", "m3": "X.XX", "m6": "X.XX", "m12": "X.XX" },
+    { "d": "2025-11", "m1": "X.XX", "m3": "X.XX", "m6": "X.XX", "m12": "X.XX" },
+    { "d": "2025-12", "m1": "X.XX", "m3": "X.XX", "m6": "X.XX", "m12": "X.XX" },
+    { "d": "2026-01", "m1": "X.XX", "m3": "X.XX", "m6": "X.XX", "m12": "X.XX" },
+    { "d": "2026-02", "m1": "X.XX", "m3": "X.XX", "m6": "X.XX", "m12": "X.XX" },
+    { "d": "2026-03", "m1": "X.XX", "m3": "X.XX", "m6": "X.XX", "m12": "X.XX" },
+    { "d": "2026-04", "m1": "X.XX", "m3": "X.XX", "m6": "X.XX", "m12": "X.XX" },
+    { "d": "2026-05", "m1": "X.XX", "m3": "X.XX", "m6": "X.XX", "m12": "X.XX" },
+    { "d": "2026-06", "m1": "X.XX", "m3": "X.XX", "m6": "X.XX", "m12": "X.XX" }
+  ]
+}
