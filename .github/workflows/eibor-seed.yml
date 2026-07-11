@@ -13,15 +13,29 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
       - name: Install xlsx
         run: npm install xlsx@0.18.5 --no-save
       - name: Backfill archive from CBUAE workbooks
         run: node scripts/seed-history.mjs
+      - name: Fetch EIBOR fragment (browser TLS via curl-impersonate)
+        run: |
+          curl -sL https://github.com/lwthiker/curl-impersonate/releases/download/v0.6.1/curl-impersonate-v0.6.1.x86_64-linux-gnu.tar.gz -o ci.tar.gz && tar xzf ci.tar.gz || true
+          ./curl_chrome116 -s "https://www.centralbank.ae/umbraco/Surface/Eibor/GetEiborData" \
+            -H "Referer: https://www.centralbank.ae/en/forex-eibor/eibor-rates/" \
+            -H "X-Requested-With: XMLHttpRequest" \
+            -o eibor-fragment.html || true
+          if ! grep -q "</td>" eibor-fragment.html 2>/dev/null; then
+            echo "curl-impersonate fetch unusable; script will fall back to node fetch"
+            rm -f eibor-fragment.html
+          else
+            echo "fragment OK: $(wc -c < eibor-fragment.html) bytes"
+          fi
       - name: Rebuild eibor-data.json
-        run: node scripts/update-eibor.mjs
+        run: node scripts/update-eibor.mjs --from-archive-ok
       - name: Commit
         run: |
+          rm -f eibor-fragment.html ci.tar.gz curl_* libcurl-impersonate* || true
           git config user.name "eibor-bot"
           git config user.email "actions@users.noreply.github.com"
           git add eibor-data.json eibor-archive.json
