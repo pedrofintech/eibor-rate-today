@@ -20,24 +20,17 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - name: Fetch EIBOR fragment (browser TLS via curl-impersonate)
+      - name: Install Playwright Chromium
         run: |
-          curl -sL https://github.com/lwthiker/curl-impersonate/releases/download/v0.6.1/curl-impersonate-v0.6.1.x86_64-linux-gnu.tar.gz -o ci.tar.gz && tar xzf ci.tar.gz || true
-          ./curl_chrome116 -s "https://www.centralbank.ae/umbraco/Surface/Eibor/GetEiborData" \
-            -H "Referer: https://www.centralbank.ae/en/forex-eibor/eibor-rates/" \
-            -H "X-Requested-With: XMLHttpRequest" \
-            -o eibor-fragment.html || true
-          if ! grep -q "</td>" eibor-fragment.html 2>/dev/null; then
-            echo "curl-impersonate fetch unusable; script will fall back to node fetch"
-            rm -f eibor-fragment.html
-          else
-            echo "fragment OK: $(wc -c < eibor-fragment.html) bytes"
-          fi
+          npm i playwright --no-save
+          npx playwright install --with-deps chromium
+      - name: Render EIBOR page (real browser)
+        run: node scripts/fetch-fragment.mjs || echo "browser render failed; script will try direct/jina"
       - name: Update eibor-data.json
         run: node scripts/update-eibor.mjs
       - name: Commit
         run: |
-          rm -f eibor-fragment.html ci.tar.gz curl_* libcurl-impersonate* || true
+          rm -f eibor-fragment.html || true
           git config user.name "eibor-bot"
           git config user.email "actions@users.noreply.github.com"
           git add eibor-data.json eibor-archive.json
