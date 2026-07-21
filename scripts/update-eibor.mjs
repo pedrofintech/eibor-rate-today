@@ -104,11 +104,12 @@ async function main() {
   const rows = await getRows();
   if (!rows.length && !TOLERANT) throw new Error("No daily rows from any source (CBUAE layout changed or all sources blocked?)");
 
-  // Archive: accumulate every real daily fixing
+  // Archive: accumulate every real daily fixing (dedupe by date - the rendered
+  // page contains the table twice, and old runs polluted the archive with dupes)
   const arch = existsSync(ARCH) ? JSON.parse(readFileSync(ARCH, "utf8")) : { rows: [] };
-  const have = new Set(arch.rows.map((r) => r.d));
-  rows.forEach((r) => { if (!have.has(r.d)) arch.rows.push(r); });
-  arch.rows = arch.rows.filter(realRow).sort((a, b) => dkey(a.d).localeCompare(dkey(b.d)));
+  const byDate = {};
+  arch.rows.concat(rows).forEach((r) => { if (realRow(r)) byDate[r.d] = r; });
+  arch.rows = Object.values(byDate).sort((a, b) => dkey(a.d).localeCompare(dkey(b.d)));
 
   // Data file: series = last 45 days; history = monthly averages (last 13 months incl. current partial)
   const data = JSON.parse(readFileSync(DATA, "utf8"));
