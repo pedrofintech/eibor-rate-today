@@ -113,7 +113,7 @@
     <span class="bmc-eibor-hero-val" id="bmc-eibor-hero-val">-</span>
     <span id="bmc-eibor-hero-chip"></span>
   </div>
-  <p class="bmc-eibor-refline">Official fixings published every business day by the Central Bank of the UAE. Latest fixing: <strong id="bmc-eibor-refdate">-</strong>.</p>
+  <p class="bmc-eibor-refline">Official Central Bank of the UAE fixings. Latest fixing: <strong id="bmc-eibor-refdate">-</strong> &middot; new fixings are published every UAE business day (Mon&ndash;Fri) around 12:15 UAE time; the Friday fixing holds over the weekend.</p>
 
   <!-- ======================= TODAY - ALL TENORS ======================= -->
   <div class="bmc-eibor-block">
@@ -147,8 +147,8 @@
         <h2 class="bmc-eibor-h2">EIBOR trend - 1M, 3M, 6M and 12M</h2>
       </div>
       <div class="bmc-eibor-ranges" id="bmc-eibor-ranges">
-        <button data-range="30d">Daily</button>
-        <button data-range="1y" class="is-active">1 year</button>
+        <button data-range="30d" class="is-active">Daily</button>
+        <button data-range="1y">1 year</button>
       </div>
     </div>
     <div class="bmc-eibor-chartcard">
@@ -274,7 +274,16 @@
 
     /* ---------------- Hero ---------------- */
     var refEl=document.getElementById('bmc-eibor-refdate');
-    if(refEl) refEl.textContent = DATA.referenceDate || '-';
+    if(refEl){
+      var rd=DATA.referenceDate || '-';
+      var wd='';
+      if(/^\d{2}\/\d{2}\/\d{4}$/.test(rd)){
+        var p=rd.split('/');
+        var dt=new Date(+p[2], +p[1]-1, +p[0]);
+        wd=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][dt.getDay()]+', ';
+      }
+      refEl.textContent = wd + rd;
+    }
     var heroVal=document.getElementById('bmc-eibor-hero-val');
     if(heroVal) heroVal.textContent = fmtPct(last.m3);
 
@@ -346,7 +355,7 @@
       s.src='https://cdn.jsdelivr.net/npm/chart.js';
       s.onload=cb; document.head.appendChild(s);
     }
-    var chart=null, hidden={m1:false,m3:false,m6:false,m12:false}, currentRange='1y';
+    var chart=null, hidden={m1:false,m3:false,m6:false,m12:false}, currentRange='30d';
 
     function dataForRange(range){
       if(range==='30d'){
