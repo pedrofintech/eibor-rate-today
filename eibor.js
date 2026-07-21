@@ -10,7 +10,7 @@
   if (window.__bmcEiborLoaded) { return; }
   window.__bmcEiborLoaded = 1;
 
-  var DATA_URL = "https://cdn.jsdelivr.net/gh/pedrofintech/eibor-rate-today@main/eibor-data.json";
+  var DATA_URL = "https://raw.githubusercontent.com/pedrofintech/eibor-rate-today/main/eibor-data.json";
 
   var CSS = `/* ===================== BMC-EIBOR - styles ===================== */
 #bmc-eibor{ font-family:inherit; color:#202432; -webkit-font-smoothing:antialiased; }
