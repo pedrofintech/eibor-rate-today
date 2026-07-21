@@ -478,7 +478,7 @@
   }
 
   function start(){
-    fetch(DATA_URL,{cache:'no-store'})
+    fetch(DATA_URL+'?d='+new Date().toISOString().slice(0,10)+'T'+new Date().getUTCHours(),{cache:'no-store'})
       .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
       .then(boot)
       .catch(function(err){
