@@ -1,16 +1,7 @@
 {
   "_readme": "Data for the EIBOR tool on brokermatch.ae/eibor-rate-today. Replace every \"X.XX\" with the official CBUAE fixings from https://www.centralbank.ae/en/forex-eibor/eibor-rates/ (values as numbers, e.g. 4.312 - not strings). referenceDate = date of the latest fixing (DD/MM/YYYY). series = daily fixings, OLDEST FIRST, keys: on (overnight), w1 (1 week), m1, m3, m6, m12. history = monthly averages (d: YYYY-MM), OLDEST FIRST, used by the 1-year chart. Keep at least 2 rows in series (the change column compares the last two) and up to 30 for the daily table; 12 rows in history.",
-  "referenceDate": "06/10/2026",
+  "referenceDate": "07/10/2026",
   "series": [
-    {
-      "d": "04/08/2026",
-      "on": 3.57947,
-      "w1": 3.74866,
-      "m1": 3.77553,
-      "m3": 3.95307,
-      "m6": 3.93697,
-      "m12": 4.20719
-    },
     {
       "d": "05/08/2026",
       "on": 3.57884,
@@ -406,6 +397,15 @@
       "m3": 4.32047,
       "m6": 4.38051,
       "m12": 5.0625
+    },
+    {
+      "d": "07/10/2026",
+      "on": 3.69275,
+      "w1": 4.12923,
+      "m1": 4.09248,
+      "m3": 4.37044,
+      "m6": 4.41254,
+      "m12": 4.9325
     }
   ],
   "history": [
@@ -495,10 +495,10 @@
     },
     {
       "d": "2026-10",
-      "m1": 4.07179,
-      "m3": 4.30765,
-      "m6": 4.44446,
-      "m12": 5.06804
+      "m1": 4.07593,
+      "m3": 4.32021,
+      "m6": 4.43808,
+      "m12": 5.04094
     }
   ]
 }
