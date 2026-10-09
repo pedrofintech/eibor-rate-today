@@ -5,6 +5,12 @@ on:
     - cron: "45 8 * * 1-5"
     - cron: "30 10 * * 1-5"
   workflow_dispatch: {}
+  # A change to the bot's code tests itself: one run right away, on the branch it was pushed to.
+  # Data is only committed from main (see the "if" on the last two steps).
+  push:
+    paths:
+      - "scripts/**"
+      - ".github/workflows/eibor-update.yml"
 
 permissions:
   contents: write
@@ -15,10 +21,12 @@ concurrency:
 
 jobs:
   update:
-    runs-on: ubuntu-latest
+    # Pinned (not ubuntu-latest): "playwright install --with-deps" depends on the Ubuntu version.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: "22"
       - name: Install Playwright Chromium
@@ -28,8 +36,14 @@ jobs:
       - name: Render EIBOR page (real browser)
         run: node scripts/fetch-fragment.mjs || echo "browser render failed; script will try direct/jina"
       - name: Update eibor-data.json
+        env:
+          # The first scheduled run of the day may miss today's fixing without failing,
+          # because the second run retries. Keep this string identical to the first cron
+          # above: if they drift apart every run is strict (more emails, never fewer).
+          EIBOR_LENIENT: ${{ github.event.schedule == '45 8 * * 1-5' }}
         run: node scripts/update-eibor.mjs
       - name: Commit
+        if: github.ref == 'refs/heads/main'
         run: |
           rm -f eibor-fragment.html || true
           git config user.name "eibor-bot"
@@ -39,11 +53,17 @@ jobs:
             echo "No changes."
           else
             git commit -m "EIBOR: automatic update"
+            pushed=0
             for i in 1 2 3; do
-              git pull --rebase --autostash origin main && git push && break
+              if git pull --rebase --autostash origin main && git push; then pushed=1; break; fi
               sleep 5
             done
+            if [ "$pushed" != 1 ]; then
+              echo "::error title=EIBOR commit::Could not push the update to main after 3 attempts."
+              exit 1
+            fi
           fi
       - name: Purge jsDelivr
+        if: github.ref == 'refs/heads/main'
         run: |
           curl -s "https://purge.jsdelivr.net/gh/pedrofintech/eibor-rate-today@main/eibor-data.json" || true
